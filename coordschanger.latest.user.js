@@ -3,10 +3,10 @@
 // @author dennistreysa
 // @version 0.0.0.0
 // @copyright 2016, dennistreysa
-// @icon
+// @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
-// @updateURL
-// @downloadURL
+// @updateURL https://github.com/dennistreysa/CoordsChanger/raw/master/coordschanger.latest.user.js
+// @downloadURL https://github.com/dennistreysa/CoordsChanger/raw/master/coordschanger.latest.user.js
 // @include http*://www.geocaching.com/my/default.aspx
 // @noframes
 // @grant GM_xmlhttpRequest
