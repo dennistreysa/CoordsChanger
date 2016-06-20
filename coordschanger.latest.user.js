@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name CoordsChanger
 // @author dennistreysa
-// @version 1
+// @version 2
 // @copyright 2016, dennistreysa
 // @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
@@ -331,7 +331,7 @@ function changeCoordsLoop(cache){
 							success : function(){
 								$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append(statusMessage);
 
-								changeCoordsLoop(cache + 1);
+								setTimeout(function(){ changeCoordsLoop(cache + 1); }, 3000);
 							},
 							error:  function(data) {
 								$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append('<img src="'+setting_imgError+'"> Could not safe coordinates!');
@@ -341,7 +341,7 @@ function changeCoordsLoop(cache){
 
 						$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append(statusMessage);
 
-						changeCoordsLoop(cache + 1);
+						setTimeout(function(){ changeCoordsLoop(cache + 1); }, 3000);
 					}
 
 				},
