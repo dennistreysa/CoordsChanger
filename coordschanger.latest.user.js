@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name CoordsChanger
 // @author dennistreysa
-// @version 0.0.0.1
+// @version 0.1.0.0
 // @copyright 2016, dennistreysa
 // @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
@@ -15,9 +15,16 @@
 
 console.log("CoordsChanger: started");
 
+// Settings
+var setting_imgLoader = "https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/loader.gif";
+var setting_imgSuccess = "https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/success.png";
+var setting_imgError = "https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/error.png";
+var setting_imgWarning = "https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/warning.png";
+
 // Global variables
 var g_isChanging = false;
 var g_caches = null;
+var g_optionOverwrite = null;
 
 
 $(document).ready(function(){
@@ -26,52 +33,7 @@ $(document).ready(function(){
 	var $sidePanel = $("#ctl00_ContentBody_WidgetMiniProfile1_LoggedInPanel");
 
 	// Create CSS for popup
-	$pageBody.append($("<style>").append("\
-											.popup_overlay_cc{\
-												background-color: #d8cd9d;\
-												width:700px;\
-												border: 2px solid #778555;\
-												overflow: auto;\
-												padding:10px;\
-												position: absolute;\
-												z-index:101;\
-												-moz-border-radius:30px;\
-												-khtml-border-radius:30px;\
-												border-radius: 30px;\
-												overflow: auto;\
-											}\
-											.popup_button_cc{\
-												background-color: #d8cd9d;\
-												border: 2px solid #778555;\
-												border-radius: 5px;\
-											}\
-											.popup_headline_cc{\
-												height: 21px;\
-												margin:5px;\
-												background-color: #778555;\
-												color: #FFFFFF;\
-												-moz-border-radius:30px;\
-												-khtml-border-radius:30px;\
-												border-radius: 30px;\
-												text-align: center;\
-											}\
-											.textarea_cc{\
-												width: 95%;\
-												height: 300px;\
-												resize: none;\
-												background-color: #dfdbc8;\
-												font-family: \"Lucida Console\", Monaco, monospace;\
-											}\
-											.popup_warning_cc{\
-												color: red;\
-												text-align: center;\
-											}\
-											.popup_table_cc{\
-												border:1px;\
-												width: 100%;\
-												font-family: \"Lucida Console\", Monaco, monospace;\
-											}\
-										"));
+	$pageBody.append($("<style>").append(".popup_table_cc,.textarea_cc{font-family:\"Lucida Console\",Monaco,monospace}.popup_overlay_cc{background-color:#d8cd9d;width:700px;border:2px solid #778555;padding:10px;position:absolute;z-index:101;-moz-border-radius:30px;-khtml-border-radius:30px;border-radius:30px;overflow:auto}.popup_button_cc{background-color:#d8cd9d;border:2px solid #778555;border-radius:5px}.popup_headline_cc{height:21px;margin:5px;background-color:#778555;color:#FFF;-moz-border-radius:30px;-khtml-border-radius:30px;border-radius:30px;text-align:center}.textarea_cc{width:95%;height:300px;resize:none;background-color:#dfdbc8}.popup_warning_cc{color:red;text-align:center}.popup_table_cc{text-align:center;border:1px;width:100%}"));
 
 	// Create popup
 	var $popup = $('<div>',	{
@@ -107,20 +69,23 @@ $(document).ready(function(){
 	// Initialize popup
 	$popup.popup({
 		blur: false,
-		escape: false,
-		onclose : function(){
-		}
+		escape: false
 	});
-
 });
 
 
 function onPopupOpen(){
-	var $content = $(	'	<h3 class="popup_headline_cc">Coords Changer - Enter Coords</h3>\
+	var $content = $(	'	<h3 class="popup_headline_cc" id="popup_headline_cc">Coords Changer</h3>\
 							<div class="popup_warning_cc">\
 								Use only at your own risk!\
 							</div>\
 							<center>\
+								<div id="popup_settings_cc">\
+									Overwrite changed coords:\
+									<input type="Radio" name="overwrite" value="always">Always</input>\
+									<input type="Radio" name="overwrite" value="if_different" checked="checked">If different</input>\
+									<input type="Radio" name="overwrite" value="never">Never</input>\
+								</div>\
 								<div id="popup_content_cc">\
 									<div>\
 										<textarea class="textarea_cc" id="textarea_coords_cc"></textarea>\
@@ -143,7 +108,7 @@ function onPopupOpen(){
 	$btn_parse.click(function(){
 		g_caches = parsePopup();
 
-		if(g_caches){
+		if(g_caches.length){
 			var $table = $('	<div>\
 									<table class="popup_table_cc" id="table_coords_cc">\
 										<thead>\
@@ -169,11 +134,11 @@ function onPopupOpen(){
 
 			$("#btn_change_cc").click(function(e){
 
-				changeCoords();
+				if(!g_isChanging){
+					changeCoords($("input:radio[name ='overwrite']:checked").val());
+				}
 
-				// Don't submit
 				e.preventDefault();
-				return false;
 			});
 		}
 	});
@@ -183,7 +148,6 @@ function onPopupOpen(){
 	});
 
 	$("#popup_window_cc").empty().append($content);
-
 }
 
 
@@ -218,7 +182,7 @@ function parsePopup(){
 		bestMatch = null;
 
 		for(var regexp = 0, len = combinations.length; regexp < len; regexp++){
-			
+
 			var match = combinations[regexp].exec(input);
 
 			if(match){
@@ -234,18 +198,20 @@ function parsePopup(){
 
 			input = input.substring(bestMatch[0].length);
 
+			var gcCode = "";
+
 			// Get GC-Code
 			if(bestMatch[1].length > 1){
-				var gcCode = bestMatch[1];
+				gcCode = bestMatch[1];
 				bestMatch = bestMatch.slice(2);
 			}else{
-				var gcCode = bestMatch[bestMatch.length - 1];
+				gcCode = bestMatch[bestMatch.length - 1];
 				bestMatch = bestMatch.slice(1, bestMatch.length - 1);
 			}
 
 			var latitude = 0;
 			var longitude = 0;
-			
+
 			if(bestMatch.length === 4){
 				latitude = (bestMatch[0] === "N" ? 1 : -1) * parseFloat(bestMatch[1]);
 				longitude = (bestMatch[2] === "W" ? -1 : 1) * parseFloat(bestMatch[3]);
@@ -265,77 +231,132 @@ function parsePopup(){
 }
 
 
-function changeCoords(){
+function changeCoords(option_overwrite){
 
-	if(!g_isChanging){
+	if (typeof(option_overwrite) == "undefined") { option_overwrite = "never"; }
 
-		g_isChanging = true;
+	option_overwrite = option_overwrite.toLowerCase();
 
-		// add loaders
-		$("#table_coords_cc > tbody > tr").each(function(index, e){
-			$(e).find("td").eq(2).empty().append($('<img src="https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/loader.gif">'));
-		});
+	var validOptionsOverwrite = ["always", "if_different", "never"];
 
-		var cache = 0;
+	if(validOptionsOverwrite.indexOf(option_overwrite) >= 0){
 
-		var changeCoordsInterval = setInterval(function(){
-			if(cache < g_caches.length){
-				changeCoordsLoop(cache)
-			}else{
-				clearInterval(changeCoordsInterval);
-			}
+		if(!g_isChanging){
 
-			cache++;
-			
-		}, 1500);
+			$("#btn_change_cc").hide();
 
-		g_isChanging = false;
+			g_optionOverwrite = option_overwrite;
+
+			g_isChanging = true;
+
+			// add loaders
+			$("#table_coords_cc > tbody > tr").each(function(index, e){
+				$(e).find("td").eq(2).empty().append($('<img src="'+setting_imgLoader+'">'));
+			});
+
+			changeCoordsLoop(0);
+		}
 	}
 }
 
 
 function changeCoordsLoop(cache){
-	$.ajax({
-		url:"https://www.geocaching.com/geocache/" + g_caches[cache],
-		type: 'GET',
-		success: function(data) {
-			
-			// Get user token
-			var token = data.match(/userToken\s*=\s*'(.+?)';/i)[1];
-
-			var payload =	{
-								dto : {
-										data : {
-											lat: g_caches[cache][1],
-											lng: g_caches[cache][2]
-										},
-										ut: token
-								}
-							};
-			
+	if(g_isChanging){
+		if(cache < g_caches.length){
 			$.ajax({
-				type: 'POST',
-				url: 'https://www.geocaching.com/seek/cache_details.aspx/SetUserCoordinate',
-				contentType: 'application/json; charset=utf-8',
-				dataType: 'json',
-				data: JSON.stringify(payload),
-				success : function(){
-					$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append($('<img src="https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/success.png">'));
+				url:"https://www.geocaching.com/geocache/" + g_caches[cache],
+				type: 'GET',
+				success: function(data) {
+
+					var change = false;
+					var statusMessage = "";
+
+					// Get user token
+					var token = data.match(/userToken\s*=\s*'(.+?)';/i);
+
+					if(token){
+
+						token = token[1];
+
+						// Check if coords are already changed
+						var coordsChanged = data.match(/"isUserDefined"\s*:\s*true/i) !== null;
+
+						statusMessage = '<img src="'+setting_imgSuccess+'"> Changed';
+
+						if(coordsChanged){
+							switch(g_optionOverwrite){
+								case "always":
+									statusMessage = '<img src="'+setting_imgWarning+'"> Overwritten!';
+									change = true;
+									break;
+								case "if_different":
+									// Check if coords are different
+									var newCoords = data.match(/"newLatLng"\s*:\s*\[\s*(\d+\.\d+)\s*,\s*(\d+\.\d+)\s*\]/i);
+
+									if(isDifferentCoord(parseFloat(newCoords[1]), g_caches[cache][1], parseFloat(newCoords[2]), g_caches[cache][2])){
+										change = true;
+										statusMessage = '<img src="'+setting_imgSuccess+'"> Different';
+									}else{
+										statusMessage = '<img src="'+setting_imgWarning+'"> Not different';
+									}
+									break;
+								case "never":
+									statusMessage = '<img src="'+setting_imgWarning+'"> Already changed!';
+									break;
+							}
+						}else{
+							change = true;
+						}
+					}else{
+						statusMessage = '<img src="'+setting_imgError+'"> PMO/Unpublished!';
+					}
+
+					if(change){
+						var payload =	{
+											dto : {
+													data : {
+														lat: g_caches[cache][1],
+														lng: g_caches[cache][2]
+													},
+													ut: token
+											}
+										};
+
+						$.ajax({
+							type: 'POST',
+							url: 'https://www.geocaching.com/seek/cache_details.aspx/SetUserCoordinate',
+							contentType: 'application/json; charset=utf-8',
+							dataType: 'json',
+							data: JSON.stringify(payload),
+							success : function(){
+								$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append(statusMessage);
+
+								changeCoordsLoop(cache + 1);
+							},
+							error:  function(data) {
+								$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append('<img src="'+setting_imgError+'"> Could not safe coordinates!');
+							}
+						});
+					}else{
+
+						$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append(statusMessage);
+
+						changeCoordsLoop(cache + 1);
+					}
+
 				},
-				async: false
+				error:  function(data) {
+					$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append('<img src="'+setting_imgError+'"> Could not load cache!');
+				}
 			});
-		},
-		error:  function(data) {
-			console.log(data);
-			console.log("ERROR!");
-		},
-		async: false
-	});
+		}
+	}
 }
 
 
 function closePopup(){
 	$("#popup_window_cc").popup('hide');
+	g_isChanging = false;
 }
 
 
@@ -352,18 +373,19 @@ function strFromCoords(latitude, longitude){
 	var lon_min = Math.floor( (longitude - lon_deg) * 60 );
 	var lon_sec = Math.round( (((longitude - lon_deg) * 60) - lon_min) * 1000 );
 
-	return lat_sign
-				+ strpad(lat_deg.toString(), 2, '0')
-				+ ' '
-				+ strpad(lat_min.toString(), 2, '0')
-				+ '.'
-				+ strpad(lat_sec.toString(), 3, '0')
-				+ ' '
-				+ strpad(lon_deg.toString(), 3, '0')
-				+ ' '
-				+ strpad(lon_min.toString(), 2, '0')
-				+ '.'
-				+ strpad(lon_sec.toString(), 3, '0');
+	return 	lat_sign
+			+ strpad(lat_deg.toString(), 2, '0')
+			+ ' '
+			+ strpad(lat_min.toString(), 2, '0')
+			+ '.'
+			+ strpad(lat_sec.toString(), 3, '0')
+			+ ' '
+			+ lon_sign
+			+ strpad(lon_deg.toString(), 3, '0')
+			+ ' '
+			+ strpad(lon_min.toString(), 2, '0')
+			+ '.'
+			+ strpad(lon_sec.toString(), 3, '0');
 }
 
 
@@ -373,9 +395,9 @@ function strpad(str, len, pad, dir) {
 	var STR_PAD_RIGHT = 2;
 	var STR_PAD_BOTH = 3;
 
-	if (typeof(len) == "undefined") { var len = 0; }
-	if (typeof(pad) == "undefined") { var pad = ' '; }
-	if (typeof(dir) == "undefined") { var dir = STR_PAD_LEFT; }
+	if (typeof(len) == "undefined") { len = 0; }
+	if (typeof(pad) == "undefined") { pad = ' '; }
+	if (typeof(dir) == "undefined") { dir = STR_PAD_LEFT; }
 
 	if (len + 1 >= str.length) {
 
@@ -400,4 +422,8 @@ function strpad(str, len, pad, dir) {
 	}
 
 	return str;
+}
+
+function isDifferentCoord(lat1, lat2, lon1, lon2){
+	return (Math.abs(lat1 - lat2) + Math.abs(lon1 - lon2) > 0.000016);
 }
