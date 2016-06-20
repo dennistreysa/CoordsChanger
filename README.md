@@ -1,6 +1,8 @@
 # CoordsChanger
 A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
 
+A Blog-Article with pictures can be found [here](http://blog.dennistreysa.xyz/?p=438) (German)
+
 ### Third Party Libraries
 - [jQuery Popup Overlay](http://dev.vast.com/jquery-popup-overlay/)
 
