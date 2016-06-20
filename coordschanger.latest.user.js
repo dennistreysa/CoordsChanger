@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name CoordsChanger
 // @author dennistreysa
-// @version 0.1.0.0
+// @version 1
 // @copyright 2016, dennistreysa
 // @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
