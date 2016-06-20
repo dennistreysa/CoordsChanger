@@ -10,7 +10,7 @@
 // @include http*://www.geocaching.com/my/default.aspx
 // @require https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/libs/jquery-popup-overlay/jquery.popupoverlay.min.js
 // @noframes
-// @grant GM_xmlhttpRequest
+// @grant none
 // ==/UserScript==
 
 console.log("CoordsChanger: started");
