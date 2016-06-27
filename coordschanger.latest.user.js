@@ -2,7 +2,7 @@
 // @name CoordsChanger
 // @namespace http://www.dennistreysa.de
 // @author dennistreysa
-// @version 3.0
+// @version 3.1
 // @copyright 2016, dennistreysa
 // @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
@@ -278,13 +278,15 @@ var coordsChanger = {
 									data: JSON.stringify(payload),
 									success : function(){
 										$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append('<img src="'+coordsChanger.setting_imgSuccess+'"> Successfully reset!');
-
-										setTimeout(function(){ coordsChanger.changeCoordsLoop(cache + 1, option_overwrite); }, 3000);
 									},
 									error:  function(data) {
 										$("#table_coords_cc > tbody > tr").eq(cache).find("td").eq(2).empty().append('<img src="'+coordsChanger.setting_imgError+'"> Could not reset coordinates!');
 									}
 								});
+
+								setTimeout(function(){ coordsChanger.changeCoordsLoop(cache + 1, option_overwrite); }, 3000);
+
+								return;
 
 							}else{
 								// Check if coords are already changed
