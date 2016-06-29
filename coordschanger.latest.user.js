@@ -2,7 +2,7 @@
 // @name CoordsChanger
 // @namespace http://www.dennistreysa.de
 // @author dennistreysa
-// @version 3.1
+// @version 3.2
 // @copyright 2016, dennistreysa
 // @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
@@ -304,7 +304,7 @@ var coordsChanger = {
 											// Check if coords are different
 											newCoords = data.match(/"newLatLng"\s*:\s*\[\s*(\d+\.\d+)\s*,\s*(\d+\.\d+)\s*\]/i);
 
-											if(isDifferentCoord(parseFloat(newCoords[1]), coordsChanger.g_caches[cache][1], parseFloat(newCoords[2]), coordsChanger.g_caches[cache][2])){
+											if(coordsChanger.isDifferentCoord(parseFloat(newCoords[1]), coordsChanger.g_caches[cache][1], parseFloat(newCoords[2]), coordsChanger.g_caches[cache][2])){
 												change = true;
 												statusMessage = '<img src="'+coordsChanger.setting_imgSuccess+'"> Different';
 											}else{
