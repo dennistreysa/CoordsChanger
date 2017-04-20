@@ -2,8 +2,8 @@
 // @name CoordsChanger
 // @namespace http://www.dennistreysa.de
 // @author dennistreysa
-// @version 3.2
-// @copyright 2016, dennistreysa
+// @version 3.3
+// @copyright 2017, dennistreysa
 // @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
 // @updateURL https://github.com/dennistreysa/CoordsChanger/raw/master/coordschanger.latest.user.js
@@ -29,7 +29,7 @@ var coordsChanger = {
 
 
 	onPopupOpen : function (){
-		var $content = $(	'	<h3 class="popup_headline_cc" id="popup_headline_cc">Coords Changer v3.0</h3>\
+		var $content = $(	'	<h3 class="popup_headline_cc" id="popup_headline_cc">Coords Changer v3.3</h3>\
 								<div class="popup_warning_cc">\
 									Use only at your own risk!\
 								</div>\
@@ -46,6 +46,9 @@ var coordsChanger = {
 											<textarea class="textarea_cc" id="textarea_coords_cc"></textarea>\
 										</div>\
 										<input class="popup_button_cc" type="button" value="Parse" id="btn_parse_cc">\
+									</div>\
+									<div>\
+										<span class="popup_warning_cc" id="popum_message_error"></span>\
 									</div>\
 								</center>\
 								<br>\
@@ -105,6 +108,8 @@ var coordsChanger = {
 
 					e.preventDefault();
 				});
+			} else {
+				$("#popum_message_error").html("Could not find any caches/coordinates!");
 			}
 		});
 
@@ -117,6 +122,8 @@ var coordsChanger = {
 
 
 	parsePopup : function (gcCodesOnly){
+
+		$("#popum_message_error").empty();
 
 		var input = $("#textarea_coords_cc").val().trim().toUpperCase(),
 
@@ -302,13 +309,17 @@ var coordsChanger = {
 											break;
 										case "if_different":
 											// Check if coords are different
-											newCoords = data.match(/"newLatLng"\s*:\s*\[\s*(\d+\.\d+)\s*,\s*(\d+\.\d+)\s*\]/i);
+											newCoords = data.match(/"newLatLng"\s*:\s*\[\s*([-+]?\d+\.\d+)\s*,\s*([-+]?\d+\.\d+)\s*\]/i);
 
-											if(coordsChanger.isDifferentCoord(parseFloat(newCoords[1]), coordsChanger.g_caches[cache][1], parseFloat(newCoords[2]), coordsChanger.g_caches[cache][2])){
-												change = true;
-												statusMessage = '<img src="'+coordsChanger.setting_imgSuccess+'"> Different';
-											}else{
-												statusMessage = '<img src="'+coordsChanger.setting_imgWarning+'"> Not different';
+											if (newCoords && newCoords != null) {
+												if(coordsChanger.isDifferentCoord(parseFloat(newCoords[1]), coordsChanger.g_caches[cache][1], parseFloat(newCoords[2]), coordsChanger.g_caches[cache][2])){
+													change = true;
+													statusMessage = '<img src="'+coordsChanger.setting_imgSuccess+'"> Different';
+												}else{
+													statusMessage = '<img src="'+coordsChanger.setting_imgWarning+'"> Not different';
+												}
+											} else {
+												statusMessage = '<img src="'+coordsChanger.setting_imgSuccess+'"> Coords were unset';
 											}
 											break;
 										case "never":
@@ -374,15 +385,16 @@ var coordsChanger = {
 
 	strFromCoords : function(latitude, longitude){
 
+		var lat_sign = (latitude < 0 ? "S" : "N"),
+			lon_sign = (longitude < 0 ? "W" : "E");
+
 		latitude = Math.abs(latitude);
 		longitude = Math.abs(longitude);
 
-		var lat_sign = (latitude < 0 ? "S" : "N"),
-			lat_deg = Math.floor(latitude),
+		var lat_deg = Math.floor(latitude),
 			lat_min = Math.floor( (latitude - lat_deg) * 60 ),
 			lat_sec = Math.round( (((latitude - lat_deg) * 60) - lat_min) * 1000 ),
 
-			lon_sign = (longitude < 0 ? "W" : "E"),
 			lon_deg = Math.floor(longitude),
 			lon_min = Math.floor( (longitude - lon_deg) * 60 ),
 			lon_sec = Math.round( (((longitude - lon_deg) * 60) - lon_min) * 1000 );
@@ -444,7 +456,7 @@ var coordsChanger = {
 		return (Math.abs(lat1 - lat2) + Math.abs(lon1 - lon2) > 0.000016);
 	},
 
-	onStart : function(){
+	onStart : function () {
 		var $pageBody = $("body"),
 			$sidePanel = $("#ctl00_ContentBody_WidgetMiniProfile1_LoggedInPanel"),
 			$popup,
@@ -494,6 +506,6 @@ var coordsChanger = {
 };
 
 
-$(document).ready(function(){
+$(document).ready(function () {
 	coordsChanger.onStart();
 });
