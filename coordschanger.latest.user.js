@@ -2,14 +2,14 @@
 // @name CoordsChanger
 // @namespace http://www.dennistreysa.de
 // @author dennistreysa
-// @version 3.3
-// @copyright 2017, dennistreysa
-// @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
+// @version 3.3-dev
+// @copyright 2016-2018, dennistreysa
+// @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/dev/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
-// @updateURL https://github.com/dennistreysa/CoordsChanger/raw/master/coordschanger.latest.user.js
-// @downloadURL https://github.com/dennistreysa/CoordsChanger/raw/master/coordschanger.latest.user.js
+// @updateURL https://github.com/dennistreysa/CoordsChanger/raw/dev/coordschanger.latest.user.js
+// @downloadURL https://github.com/dennistreysa/CoordsChanger/raw/dev/coordschanger.latest.user.js
 // @include http*://www.geocaching.com/my/default.aspx
-// @require https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/libs/jquery-popup-overlay/jquery.popupoverlay.min.js
+// @require https://raw.githubusercontent.com/dennistreysa/CoordsChanger/dev/libs/jquery-popup-overlay/jquery.popupoverlay.min.js
 // @noframes
 // @grant none
 // ==/UserScript==
