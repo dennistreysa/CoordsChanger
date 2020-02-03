@@ -2,13 +2,13 @@
 // @name CoordsChanger
 // @namespace http://www.dennistreysa.de
 // @author dennistreysa
-// @version 3.3
-// @copyright 2017, dennistreysa
+// @version 3.4
 // @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coords for caches on geocaching.com
 // @updateURL https://github.com/dennistreysa/CoordsChanger/raw/master/coordschanger.latest.user.js
 // @downloadURL https://github.com/dennistreysa/CoordsChanger/raw/master/coordschanger.latest.user.js
-// @include http*://www.geocaching.com/my/default.aspx
+// @include http*://www.geocaching.com/account/dashboard
+// @require https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
 // @require https://raw.githubusercontent.com/dennistreysa/CoordsChanger/master/libs/jquery-popup-overlay/jquery.popupoverlay.min.js
 // @noframes
 // @grant none
@@ -29,7 +29,7 @@ var coordsChanger = {
 
 
 	onPopupOpen : function (){
-		var $content = $(	'	<h3 class="popup_headline_cc" id="popup_headline_cc">Coords Changer v3.3</h3>\
+		var $content = $(	'	<h3 class="popup_headline_cc" id="popup_headline_cc">Coordinates Changer v3.4</h3>\
 								<div class="popup_warning_cc">\
 									Use only at your own risk!\
 								</div>\
@@ -458,11 +458,10 @@ var coordsChanger = {
 
 	onStart : function () {
 		var $pageBody = $("body"),
-			$sidePanel = $("#ctl00_ContentBody_WidgetMiniProfile1_LoggedInPanel"),
 			$popup,
 			$popupButton,
 			$sidebarHeader,
-			$sidebarBody;
+      $sidebarList;
 
 		// Create CSS for popup
 		$pageBody.append($("<style>").append(".popup_table_cc,.textarea_cc{font-family:\"Lucida Console\",Monaco,monospace}.popup_overlay_cc{background-color:#d8cd9d;width:700px;border:2px solid #778555;padding:10px;position:absolute;z-index:101;-moz-border-radius:30px;-khtml-border-radius:30px;border-radius:30px;overflow:auto}.popup_button_cc{background-color:#d8cd9d;border:2px solid #778555;border-radius:5px}.popup_headline_cc{height:21px;margin:5px;background-color:#778555;color:#FFF;-moz-border-radius:30px;-khtml-border-radius:30px;border-radius:30px;text-align:center}.textarea_cc{width:95%;height:300px;resize:none;background-color:#dfdbc8}.popup_warning_cc{color:red;text-align:center}.popup_table_cc{text-align:center;border:1px;width:100%}"));
@@ -477,7 +476,7 @@ var coordsChanger = {
 
 		// Create sidebar
 		$popupButton = $('<input/>', {
-									value: "Change Coords!",
+									value: "Change Coordinates",
 									type: "submit",
 									id: 'button_cc',
 									class: "Button",
@@ -492,10 +491,11 @@ var coordsChanger = {
 									}
 								});
 
-		$sidebarHeader = $("<h3>", {class: "WidgetHeader"}).append("Bulk Coords Changer");
-		$sidebarBody = $("<div>", {class: "WidgetBody"}).append($("<center>").append($popupButton));
+		$sidebarHeader = $("<h3>", {class: "link-header"}).append("Bulk Coordinates Changer");
+    $sidebarList = $("<ul>", {class: "link-block"}).append("<li>").append($popupButton);
 
-		$sidePanel.prepend($sidebarBody).prepend($sidebarHeader);
+    $("nav.sidebar-links:last").append($sidebarHeader).append($sidebarList);
+    
 
 		// Initialize popup
 		$popup.popup({
