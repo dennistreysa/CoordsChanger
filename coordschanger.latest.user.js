@@ -2,7 +2,7 @@
 // @name Bulk Coordinates Changer
 // @namespace http://www.dennistreysa.de
 // @author dennistreysa
-// @version 3.5
+// @version 3.5-dev
 // @icon https://raw.githubusercontent.com/dennistreysa/CoordsChanger/dev/res/icon.png
 // @description A Greasemonkey/Tampermonkey/Violentmonkey script to automatically change a bunch of coordinates for caches on geocaching.com
 // @updateURL https://github.com/dennistreysa/CoordsChanger/raw/dev/coordschanger.latest.user.js
